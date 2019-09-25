@@ -4,7 +4,7 @@
 import os
 from collections import defaultdict
 
-DATA = 'data'
+DATA = '/data0/data_audio/exquisite_corpus_data'
 
 SOURCE_LANGUAGES = {
     # OPUS's data files of OpenSubtitles 2018
@@ -138,12 +138,12 @@ SOURCE_LANGUAGES = {
 }
 
 COUNT_SOURCES = [
-    'subtitles', 'news', 'wikipedia', 'reddit/merged', 'twitter',
+    'subtitles', 'news', 'wikipedia', 'reddit/merged',
     'google', 'jieba', 'web'
 ]
 
 FULL_TEXT_SOURCES = [
-    'wikipedia', 'reddit/merged', 'twitter', 'opensubtitles', 'tatoeba',
+    'wikipedia', 'reddit/merged', 'opensubtitles', 'tatoeba',
     'newscrawl', 'europarl', 'globalvoices'
 ]
 MERGED_SOURCES = {
@@ -156,7 +156,7 @@ WP_LANGUAGE_MAP = {
     'fil': 'tl',
     'nb': 'no'
 }
-WP_VERSION = '20190120'
+WP_VERSION = '20190920'
 GOOGLE_LANGUAGE_MAP = {
     'en': 'eng',
     'zh-Hans': 'chi-sim',
@@ -268,7 +268,7 @@ for _source in COUNT_SOURCES:
 
 SUPPORTED_LANGUAGES = sorted([_lang for _lang in LANGUAGE_SOURCES if len(LANGUAGE_SOURCES[_lang]) >= 3])
 LARGE_LANGUAGES = sorted([_lang for _lang in LANGUAGE_SOURCES if len(LANGUAGE_SOURCES[_lang]) >= 5 or _lang == 'nl'])
-TWITTER_LANGUAGES = sorted(set(SOURCE_LANGUAGES['twitter']) & set(SUPPORTED_LANGUAGES))
+# TWITTER_LANGUAGES = sorted(set(SOURCE_LANGUAGES['twitter']) & set(SUPPORTED_LANGUAGES))
 OPENSUB_PARALLEL_LANGUAGES = [
     'ar', 'de', 'en', 'es', 'fa', 'fi', 'fr', 'it', 'ja', 'nl', 'pl', 'pt', 'ru',
     'sv', 'zh-Hans', 'zh-Hant'
@@ -657,8 +657,8 @@ rule extract_newscrawl:
     input:
         DATA + "/downloaded/newscrawl-2014-monolingual.tar.gz"
     output:
-        expand(temp(DATA + "/extracted/newscrawl/training-monolingual-news" \
-                         "-2014/news.2014.{lang}.shuffled"), lang=SOURCE_LANGUAGES['newscrawl'])
+        temp(expand(DATA + "/extracted/newscrawl/training-monolingual-news" \
+                         "-2014/news.2014.{lang}.shuffled", lang=SOURCE_LANGUAGES['newscrawl']))
     shell:
         "tar xf {input} -C {DATA}/extracted/newscrawl && touch " \
         "{DATA}/extracted/newscrawl/training-monolingual-news-2014/*"
@@ -686,10 +686,10 @@ rule extract_amazon_acl10:
     input:
         DATA + "/downloaded/amazon/cls-acl10-unprocessed.tar.gz"
     output:
-        expand(temp(DATA + "/extracted/amazon-acl10/cls-acl10-unprocessed/{" \
-                      "lang}/{dataset}.review"),
+        temp(expand(DATA + "/extracted/amazon-acl10/cls-acl10-unprocessed/{" \
+                      "lang}/{dataset}.review",
                lang=AMAZON_ACL_CODES,
-               dataset=AMAZON_ACL_DATASETS)
+               dataset=AMAZON_ACL_DATASETS))
     shell:
         "tar xf {input} -C {DATA}/extracted/amazon-acl10 && touch {output}"
 
@@ -743,7 +743,6 @@ rule monolingual_corpus_en:
         DATA + "/downloaded/opus/OpenSubtitles2018.en.txt.gz",
         DATA + "/downloaded/opus/Europarl.en.txt.gz",
         DATA + "/downloaded/opus/GlobalVoices.en.txt.gz",
-        expand(DATA + "/extracted/twitter/twitter-{year}.txt.gz", year=[2014, 2015, 2016, 2017, 2018]),
         expand(DATA + "/extracted/reddit/{shard}.txt.gz", shard=SAMPLED_REDDIT_SHARDS)
     output:
         DATA + "/monolingual/en.txt.gz"
